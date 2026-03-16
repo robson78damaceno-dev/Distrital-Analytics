@@ -1,0 +1,62 @@
+/* Só aparece em retrato (vertical) em telas pequenas */
+.overlay {
+  display: none;
+}
+
+@media (max-width: 768px) and (orientation: portrait) {
+  .overlay {
+    display: flex;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: var(--bg-base);
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+
+  .content {
+    text-align: center;
+    max-width: 280px;
+  }
+
+  .icon {
+    margin-bottom: 1.5rem;
+    animation: rotate 2s ease-in-out infinite;
+  }
+
+  .iconImage {
+    display: block;
+    width: 80px;
+    height: 80px;
+    margin: 0 auto;
+    object-fit: contain;
+    filter: invert(1) brightness(1.1);
+  }
+
+  @keyframes rotate {
+    0%,
+    100% {
+      transform: rotate(-90deg);
+    }
+    50% {
+      transform: rotate(0deg);
+    }
+  }
+
+  .text {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 0.5rem 0;
+    line-height: 1.4;
+  }
+
+  .hint {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.4;
+  }
+}
