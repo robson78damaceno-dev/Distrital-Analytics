@@ -31,37 +31,30 @@ function App() {
   const [uploadModalOpen, setUploadModalOpen] = useState(false)
 
   useEffect(() => {
-    try {
-      const storedRows = window.localStorage.getItem(STORAGE_ROWS_KEY)
-      const storedCols = window.localStorage.getItem(STORAGE_COLS_KEY)
-      if (storedRows && storedCols) {
-        const parsedRows = normalizeRows(JSON.parse(storedRows))
-        setData(parsedRows)
-        setColumnNames(JSON.parse(storedCols))
-        window.localStorage.setItem(STORAGE_ROWS_KEY, JSON.stringify(parsedRows))
-        return
-      }
-      // Sem dados salvos: carrega planilha fixa do servidor (public/planilha.csv)
-      fetch(PLANILHA_FIXA_URL)
-        .then((res) => (res.ok ? res.text() : Promise.reject(new Error('Planilha não encontrada'))))
-        .then((csv) => {
-          const parsed = parseSpreadsheetFromString(csv)
-          if (parsed && parsed.rows.length > 0) {
-            setData(normalizeRows(parsed.rows))
-            setColumnNames(parsed.columns)
-          } else {
-            setData(normalizeRows(fixedRows))
-            setColumnNames(fixedColumns)
+    // Sempre prioriza a planilha fixa do deploy para evitar dados antigos no localStorage.
+    fetch(PLANILHA_FIXA_URL)
+      .then((res) => (res.ok ? res.text() : Promise.reject(new Error('Planilha não encontrada'))))
+      .then((csv) => {
+        const parsed = parseSpreadsheetFromString(csv)
+        if (parsed && parsed.rows.length > 0) {
+          const normalized = normalizeRows(parsed.rows)
+          setData(normalized)
+          setColumnNames(parsed.columns)
+          try {
+            window.localStorage.setItem(STORAGE_ROWS_KEY, JSON.stringify(normalized))
+            window.localStorage.setItem(STORAGE_COLS_KEY, JSON.stringify(parsed.columns))
+          } catch {
+            /* ignore */
           }
-        })
-        .catch(() => {
-          setData(normalizeRows(fixedRows))
-          setColumnNames(fixedColumns)
-        })
-    } catch {
-      setData(normalizeRows(fixedRows))
-      setColumnNames(fixedColumns)
-    }
+          return
+        }
+        setData(normalizeRows(fixedRows))
+        setColumnNames(fixedColumns)
+      })
+      .catch(() => {
+        setData(normalizeRows(fixedRows))
+        setColumnNames(fixedColumns)
+      })
   }, [])
 
   const handleFileLoaded = useCallback((rows: DataRow[], columns: string[]) => {
